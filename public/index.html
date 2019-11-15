@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<style>
+* {
+	margin: 0;
+	padding: 0;
+}
+.section {
+	display: flex;
+	width:  100vw;
+	height: 100vh;
+	justify-content: center;
+	align-items: center;
+	background-color: #000;
+}
+#video {
+}
+</style>
+</head>
+<body>
+<section class="section">
+	<video id="video" controls></video>
+</section>
+</body>
+<script src="/js/hls.js"></script>
+<script>
+if(Hls.isSupported()) {
+	var video = document.getElementById('video')
+	var { hostname } = location
+	var hlsUrl = `http://${hostname}/hls/.m3u8`
+	var hls = new Hls()
+	hls.loadSource(hlsUrl)
+	hls.attachMedia(video)
+	hls.on(Hls.Events.MANIFEST_PARSED, function() {
+		// video.play()
+	})
+}
+</script>
+</html>
