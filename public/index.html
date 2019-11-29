@@ -8,6 +8,7 @@
 	padding: 0;
 }
 .section {
+	position: relative;
 	display: flex;
 	width:  100vw;
 	height: 100vh;
@@ -15,27 +16,144 @@
 	align-items: center;
 	background-color: #000;
 }
-#video {
+video {
+	outline: none;
+}
+.ui {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+}
+.controls,
+.title {
+	border-radius: 6px;
+	padding: 4px 6px;
+}
+.controls {
+	position: absolute;
+	top:  10px;
+	left: 10px;
+	width: 100px;
+	background-color: #fff;
+}
+.controls a {
+	display: block;
+}
+.title {
+	position: absolute;
+	top:  10px;
+	left: 50%;
+	transform: translate(-50%);
+	background-color: rgba(255, 255, 255, .8);
 }
 </style>
 </head>
 <body>
 <section class="section">
-	<video id="video" controls></video>
+	<video id="video"></video>
+	<div id="ui" class="ui">
+		<div id="controls" class="controls">
+			<a v-if="!played" @click="this.play">播放</a>
+			<a v-if="!paused" @click="this.pause">暂停</a>
+			<a v-if="document.pictureInPictureEnabled && !inPicture" @click="this.requestPictureInPicture">画中画</a>
+			<a v-if="document.pictureInPictureEnabled && inPicture" @click="this.exitPictureInPicture">退出画中画</a>
+		</div>
+		<div class="title">{{title}}</div>
+	</div>
 </section>
 </body>
-<script src="/js/hls.js"></script>
+<script src="/js/lib/vue.js"></script>
+<script src="/js/lib/hls.js"></script>
 <script>
+var video = document.getElementById('video')
+var { hostname } = location
+var hlsUrl = `http://${hostname}/hls/.m3u8`
 if(Hls.isSupported()) {
-	var video = document.getElementById('video')
-	var { hostname } = location
-	var hlsUrl = `http://${hostname}/hls/.m3u8`
 	var hls = new Hls()
 	hls.loadSource(hlsUrl)
 	hls.attachMedia(video)
 	hls.on(Hls.Events.MANIFEST_PARSED, function() {
 		// video.play()
 	})
+}
+
+var App = new Vue({
+	el: '#ui',
+	data: {
+		played: false,
+		paused: true,
+		inPicture: false,
+		document,
+		title: '123'
+	},
+	methods: {
+		play: function() {
+			video.play()
+		},
+		pause: function() {
+			video.pause()
+		},
+		requestPictureInPicture: function() {
+			video.requestPictureInPicture()
+		},
+		exitPictureInPicture: function() {
+			document.exitPictureInPicture()
+		},
+		listen: function() {
+			video.addEventListener('play', e => {
+				this.played = true
+				this.paused = false
+			})
+			video.addEventListener('pause', e => {
+				this.paused = true
+				this.played = false
+			})
+			video.addEventListener('enterpictureinpicture', e => {
+				this.inPicture = true
+			})
+			video.addEventListener('leavepictureinpicture', e => {
+				this.inPicture = false
+			})
+		},
+		update: function({ data, name, subname }) {
+			document.title = this.title = `${name}${data.length > 1? ` - ${subname}`: ''}`
+		},
+		opened: function() {
+			ws_up.send('getCurrentInfo')
+		}
+	},
+	created: function() {
+		this.listen()
+	}
+})
+
+var ws_up = clientWebSocket('ws://10.1.106.239:4090/updata', App.update, App.opened)
+
+// 创建websocket客户端
+function clientWebSocket(url, messageFn, openFn) {
+	var ws = new WebSocket(url)
+	ws.onopen = function () {
+		console.log(`[CLIENT] open`)
+		openFn && openFn()
+	}
+
+	ws.onmessage = function({ data }) {
+		if (!data) return
+		var params = JSON.parse(data)
+		messageFn && messageFn(params)
+	}
+
+	ws.onerror = function(err) {
+		console.log(`[CLIENT] error`)
+	}
+
+	ws.onclose = function(msg) {
+		console.log(`[CLIENT] close`)
+	}
+
+	return ws
 }
 </script>
 </html>

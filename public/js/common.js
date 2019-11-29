@@ -7,7 +7,7 @@ g.VM = {
 }
 g.WD = {
 	__getClass: function(obj) {
-		return Object.prototype.toString.call(obj).match(/^\[object\s(.*)\]$/)[1]
+		return Object.prototype.toString.call(obj).slice(8, -1)
 	},
 	// Object继承
 	extend: function(org, obj) {

@@ -1,9 +1,10 @@
 const Koa        = require('koa')
-const app        = new Koa()
 const json       = require('koa-json')
 const onerror    = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const logger     = require('koa-logger')
+const wsServer   = require('./wsServer')
+const app        = wsServer(new Koa())
 
 const config     = require('./config')
 
@@ -24,11 +25,12 @@ app.use(require('koa-static')(__dirname + '/public'))
 // 路由
 // require('./config.routes')(app)
 
+require('./config.ws')(app)
 require('./live')(app)
 
 // error-handling
-app.on('error', (err, ctx) => {
-	console.error('服务器 错误', err, ctx)
-})
+// app.on('error', (err, ctx) => {
+// 	console.error('服务器 错误', err, ctx)
+// })
 
 module.exports = app
