@@ -1,0 +1,21 @@
+{
+    "name": "live_server",
+    "version": "1.0.0",
+    "main": "app.js",
+    "scripts": {
+        "start": "nodemon bin/www"
+    },
+    "dependencies": {
+        "ioredis": "^4.14.1",
+        "koa": "^2.11.0",
+        "koa-body": "^4.1.1",
+        "koa-json": "^2.0.2",
+        "koa-logger": "^3.2.1",
+        "koa-onerror": "^4.1.0",
+        "koa-route": "^3.2.0",
+        "koa-router": "^7.4.0",
+        "koa-static": "^5.0.0",
+        "mysql2": "^2.1.0",
+        "ws": "^7.2.0"
+    }
+}
