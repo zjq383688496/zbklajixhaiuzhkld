@@ -1,6 +1,6 @@
 const fs = require('fs')
 const { redis, video } = require('../utils')
-const { sbin } = require('../config')
+const { __tmp, sbin } = require('../config')
 
 const videos = {
 	// 列表
@@ -10,9 +10,11 @@ const videos = {
 	// 创建
 	create: async (ctx, next) => {
 		const { files: { file } } = ctx.request,
-			{ hash, name, path, size, type } = file
+			{ path } = file
 		const info = await video.getMediaInfo(path)
+		const { path: _path } = await video.saveMedia(file)
 		fs.unlinkSync(path)
+		debugger
 		ctx.resHandle('0000', info)
 	},
 	// 详情

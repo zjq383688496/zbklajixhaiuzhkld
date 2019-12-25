@@ -1,10 +1,24 @@
-const { sbin } = require('../config')
+const fs = require('fs')
+const { __tmp, sbin } = require('../config')
 const { exec } = require('child_process')
 
 module.exports = {
     getMediaInfo,
+    saveMedia,
 }
 
+function saveMedia({ hash, name, path, size, type }) {
+    return new Promise((resolve, reject) => {
+        const targetDir = `${__tmp}/${hash}`,
+            target = `${targetDir}/${name}`
+        fs.mkdir(targetDir, { recursive: true }, err => {
+            fs.copyFileSync(path, target)
+            resolve({ hash, name, path: target, size, type })
+        })
+    })
+}
+
+// 获取媒体信息
 function getMediaInfo(path) {
     return new Promise((resolve, reject) => {
         exec(`${sbin.ffprobe} -v quiet -show_format -show_streams -print_format json ${path}`, (error, stdout, stderr) => {

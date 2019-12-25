@@ -1,6 +1,7 @@
 const path = require('path')
 
 const config = {
+	__tmp: _path('./tmp'),
 	__dirname: __dirname,
 	sbin: {
 		ffmpeg: _path('./sbin/ffmpeg'),

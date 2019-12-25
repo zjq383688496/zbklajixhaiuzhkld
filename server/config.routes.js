@@ -10,7 +10,7 @@ module.exports = (app, type) => {
 		ctx.set('Access-Control-Allow-Credentials', true)
 		ctx.set('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type')
 		ctx.set('Access-Control-Allow-Origin',  '*')
-		ctx.set('Access-Control-Allow-Methods', 'POST')
+		ctx.set('Access-Control-Allow-Methods', 'POST, PUT')
 		ctx.set('Access-Control-Max-Age', 3600)
 		if (ctx.method === 'OPTIONS') return ctx.body = ''
 		ctx.cfg = config
