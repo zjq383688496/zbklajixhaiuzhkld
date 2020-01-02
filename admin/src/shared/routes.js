@@ -1,10 +1,10 @@
 import Home from './Home'
-// import Grid from './Grid'
-import List from './List'
+import Video from './Video'
 import { videoList } from './api'
 
 const routes =  [
 	{
+		name: 'home',
 		path: '/',
 		exact: true,
 		component: Home,
@@ -15,9 +15,10 @@ const routes =  [
 	// 	fetchInitialData: (path = '') => fetchPopularRepos(path)
 	// }
 	{
-		path: '/videos',
-		component: List,
-		fetchInitialData: (path = '') => videoList()
+		name: 'video',
+		path: '/video',
+		component: Video,
+		fetchInitialData: () => videoList()
 	}
 ]
 

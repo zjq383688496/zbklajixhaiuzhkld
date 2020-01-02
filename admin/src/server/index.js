@@ -1,3 +1,6 @@
+// 处理css
+import csshook from 'css-modules-require-hook/preset'
+
 const express = require('express')
 const cors = require('cors')
 const React = require('react')
@@ -9,6 +12,8 @@ const serialize = require('serialize-javascript')
 // import serialize from 'serialize-javascript'
 import App from '../shared/App'
 import routes from '../shared/routes'
+
+// import '@alifd/next/dist/next.css'
 
 const app  = express()
 const PORT = 4190
@@ -22,7 +27,14 @@ app.get('*', (req, res, next) => {
 	console.log('url: ', req.url)
 	const promise = activeRoute.fetchInitialData? activeRoute.fetchInitialData(req.path): Promise.resolve()
 
-	promise.then((data) => {
+	const route = {}
+
+	if (activeRoute) {
+		route.name = activeRoute.name
+		route.path = activeRoute.path
+	}
+
+	promise.then(data => {
 		const context = { data }
 
 		const str = renderToString(
@@ -35,8 +47,9 @@ app.get('*', (req, res, next) => {
 			<html>
 				<head>
 					<title>SSR with RR</title>
+					<script>window.__INITIAL_DATA__ = ${serialize(data)} || {}</script>
+					<script>window.__ROUTER_DATA__  = ${serialize(route)}</script>
 					<script src="/bundle.js" defer></script>
-					<script>window.__INITIAL_DATA__ = ${serialize(data)}</script>
 				</head>
 				<body>
 					<div id="app">${str}</div>
