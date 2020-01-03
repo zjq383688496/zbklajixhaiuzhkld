@@ -6,7 +6,7 @@
   "scripts": {
     "start": "webpack -w",
     "dev": "webpack -w",
-    "ssr": "nodemon server.js",
+    "ssr": "nodemon publicServer/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

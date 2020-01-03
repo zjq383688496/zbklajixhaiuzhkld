@@ -10,7 +10,7 @@ const serialize = require('serialize-javascript')
 // import { renderToString } from 'react-dom/server'
 // import { StaticRouter, matchPath } from 'react-router-dom'
 // import serialize from 'serialize-javascript'
-import App from '../shared/App'
+import App from '../shared/AppServer'
 import routes from '../shared/routes'
 
 // import '@alifd/next/dist/next.css'
@@ -47,6 +47,7 @@ app.get('*', (req, res, next) => {
 			<html>
 				<head>
 					<title>SSR with RR</title>
+					<link rel="shortcut icon" href="#"/>
 					<script>window.__INITIAL_DATA__ = ${serialize(data)} || {}</script>
 					<script>window.__ROUTER_DATA__  = ${serialize(route)}</script>
 					<script src="/bundle.js" defer></script>

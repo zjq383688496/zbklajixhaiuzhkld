@@ -3,6 +3,21 @@ const webpack = require('webpack')
 const nodeExternals = require('webpack-node-externals')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
+const __src__ = path.resolve(__dirname, 'src/shared')
+console.log('__src__: ', __src__)
+
+const resolve = {
+	// extensions: ['', '.js'],
+	alias: {
+		'@component': `${__src__}/component`,
+		'@service':   `${__src__}/service`,
+	}
+}
+
+// const MCEP = {
+// 	loader: MiniCssExtractPlugin.loader,
+// }
+
 const clientConfig = {
 	entry: './src/client/index.js',
 	output: {
@@ -51,6 +66,7 @@ const clientConfig = {
 			},
 		]
 	},
+	resolve,
 	plugins: [
 		new MiniCssExtractPlugin({
 			filename: '[name].css',
@@ -67,7 +83,8 @@ const serverConfig = {
 	target: 'node',
 	externals: [nodeExternals()],
 	output: {
-		path: __dirname,
+		// path: __dirname,
+		path: path.resolve(__dirname, 'publicServer'),
 		filename: 'server.js',
 		publicPath: '/'
 	},
@@ -119,6 +136,7 @@ const serverConfig = {
 			},
 		]
 	},
+	resolve,
 	plugins: [
 		new MiniCssExtractPlugin({
 			filename: '[name].css',

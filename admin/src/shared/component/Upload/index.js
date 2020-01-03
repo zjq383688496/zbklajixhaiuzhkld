@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Button, Table } from '@alifd/next'
-import { videoUpload } from './api'
+import { videoUpload } from '@service/video'
 
 class Upload extends Component {
 	constructor(props) {
