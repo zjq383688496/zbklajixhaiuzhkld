@@ -1,4 +1,5 @@
 const channels = [
+	{ name: '无',     key: 0 },
 	{ name: '电影',   key: 1 },
 	{ name: '电视剧', key: 2 },
 	{ name: '动漫',   key: 3 },

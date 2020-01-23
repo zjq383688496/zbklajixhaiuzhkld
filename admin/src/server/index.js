@@ -42,6 +42,7 @@ app.get('*', (req, res, next) => {
 				<App />
 			</StaticRouter>
 		)
+		res.set('Cache-Control', 'public, max-age=604800')
 		res.send(`
 			<!DOCTYPE html>
 			<html>

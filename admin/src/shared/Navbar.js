@@ -38,3 +38,5 @@ export default class Navbar extends React.Component {
 		)
 	}
 }
+
+// <NavLink to={path}>{name}</NavLink>

@@ -5,6 +5,8 @@ import Upload from '@component/Upload'
 
 import './index.less'
 
+const { random } = Math
+
 const {
 	Item:   FormItem,
 	Error:  FormError,
@@ -61,21 +63,16 @@ class Video extends Component {
 		return (
 			<Form {...formItemLayout}>
 				<FormItem label="频道">
-					<RadioGroup name="channel" defaultValue={1}>
+					<RadioGroup name="channel" defaultValue={0}>
 						{
 							channels.map(({ name, key }) => <Radio key={key} value={key}>{name}</Radio>)
 						}
 					</RadioGroup>
 				</FormItem>
 				<FormItem label="标签">
-					<TagGroup name="tag" defaultValue={1}>
+					<TagGroup name="tag" defaultValue={''}>
 						{
-							tags.map(tag => {
-								let { h, s, l, a } = randomColor(),
-									color  = `hsl(${h}, ${s}%, ${l}%)`,
-									bColor = `hsla(${h}, ${s}%, ${l}%, .25)`
-								return <SelectableTag key={tag} type="normal" style={{ backgroundColor: bColor, borderColor: color, color }}>{tag}</SelectableTag>
-							})
+							tags.map(tag => <SelectableTag key={tag} type="normal">{tag}</SelectableTag>)
 						}
 					</TagGroup>
 					<Input
@@ -93,48 +90,18 @@ class Video extends Component {
 					validator={this.userExists}
 					help=""
 				>
-					<Input placeholder="Input frank" name="valUsername" />
+					<Input placeholder="请输入" name="valUsername" />
 					<FormError name="valUsername" >
 						{ (errors, state) => state === 'loading'? 'loading...': errors }
 					</FormError>
 				</FormItem>
-				<FormItem
-					label="Email:"
-					hasFeedback
-					required
-					requiredTrigger="onBlur"
-					format="email"
-				>
-					<Input placeholder="Both trigget onBlur and onChange" name="valEmail" />
-				</FormItem>
 
 				<FormItem
-					label="Password:"
-					hasFeedback
-					required
-					requiredMessage="Please enter password"
-				>
-					<Input htmlType="password" name="valPasswd" />
-				</FormItem>
-
-				<FormItem
-					label="Gender:"
-					hasFeedback
-					required
-					requiredMessage="Please select your gender"
-				>
-					<RadioGroup name="valSex" >
-						<Radio value="male">Male</Radio>
-						<Radio value="female">Female</Radio>
-					</RadioGroup>
-				</FormItem>
-
-				<FormItem
-					label="Remarks:"
+					label="描述"
 					required
 					requiredMessage="Really do not intend to write anything?"
 				>
-					<TextArea maxLength={20} hasLimitHint placeholder="Everything is ok!" name="valTextarea" />
+					<TextArea maxLength={20} hasLimitHint placeholder="请输入" name="description" />
 				</FormItem>
 
 				<FormItem wrapperCol={{ offset: 6 }} >
@@ -149,12 +116,19 @@ class Video extends Component {
 export default Video
 
 function getCol(n) {
-	return Math.random() * n >> 0
+	return random() * n | 0
 }
 function randomColor() {
 	let h   = getCol(360),
-		s   = (h > 40 && h < 200? 70: 90) + getCol(10),
+		s   = (h > 40 && h < 200? 70: 90) + getCol(100),
 		l   = 35 + getCol(15)
+	return { h, s, l }
+}
+
+function randomColor2() {
+	var h   = getCol(360),
+		s   = h > 40 && h < 200? 70: 90 + getCol(10),
+		l   = 40 + getCol(20)
 	return { h, s, l }
 }
 

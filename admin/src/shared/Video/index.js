@@ -34,7 +34,8 @@ class Video extends Component {
 			loading: !repos,
 		}
 	}
-	componentDidMount() {}
+	componentDidMount() {
+	}
 	componentDidUpdate(prevProps, prevState) {}
 
 	routeTo = url => {
