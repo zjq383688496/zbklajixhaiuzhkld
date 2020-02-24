@@ -46,6 +46,11 @@ export default class Player extends Component {
 		}
 	}
 
+	changeAudio = track => {
+		let { MS } = this.state
+		MS.trackAudio = track
+	}
+
 	render() {
 		let { currentTime, duration, MS } = this.state,
 			durationStr = time2Str(duration),
@@ -66,12 +71,14 @@ export default class Player extends Component {
 						<span className="ui-player-control-time">{currentStr} / {durationStr}</span>
 					</div>
 					<div className="ui-player-control-right">
-						<a className="icon-volume"></a>
-						<a className="icon-cog"></a>
-						<a className="icon-enlarge"></a>
+						<a onClick={e => this.changeAudio('96k')}>96k</a>
+						<a onClick={e => this.changeAudio('160k')}>160k</a>
 					</div>
 				</div>
 			</div>
 		)
 	}
 }
+						// <a className="icon-volume"></a>
+						// <a className="icon-cog"></a>
+						// <a className="icon-enlarge"></a>

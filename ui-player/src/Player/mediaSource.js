@@ -16,22 +16,26 @@ class IMS {
 
 	// 初始变量options
 	currentTime = 0
-	mimeVideo   = 'video/mp4; codecs="avc1.64001f"'
-	mimeAudio   = 'audio/mp4; codecs="mp4a.40.2"'
+	mime_video  = 'video/mp4; codecs="avc1.64001f"'
+	mime_audio  = 'audio/mp4; codecs="mp4a.40.2"'
 	info_video  = { updateTime: 0, updateSpaceTime: 20, lock: false, endTime: 0, updateLock: false, }
 	info_audio  = { updateTime: 0, updateSpaceTime: 20, lock: false, endTime: 0, updateLock: false, }
 	mediaHeader = {}
 	videoBuffer = null
 	audioBuffer = null
+	track_video = '360p'
+	track_audio = '96k'
 
 	timeout = null
 
 	canplayLock = false
 
-	async init() {
+	init() {
 		let { id } = this
-		await this.getInfo(id)
-		this.initMS()
+		Promise.all([this.getInfo(id, 'video'), this.getInfo(id, 'audio')]).then(res => {
+			this.initMS()
+		})
+		
 	}
 
 	// 初始化播放器
@@ -40,77 +44,69 @@ class IMS {
 		this.$video.src = URL.createObjectURL(mediaSource)
 		mediaSource.addEventListener('sourceopen', this.sourceOpen.bind(this))
 
-		this.$video.addEventListener('canplaythrough', this.canplay.bind(this))
-
+		// this.$video.addEventListener('canplaythrough', this.canplay.bind(this))
 	}
 
-	canplay(e) {
-		if (this.canplayLock) return
-		this.canplayLock = true
-		console.log('canplay!')
-		this.playInit()
-	}
-
-	// player初始化操作
-	playInit() {
-		let { $video } = this
-
-		// $video.playbackRate = 3
-		$video.play()
-		if (!document.pictureInPictureElement) {
-			debugger
-			$video.requestPictureInPicture()
-		} else {
-			alert('当前进程已被占用, 请关闭后再试...')
-		}
-	}
+	// canplay(e) {
+	// 	if (this.canplayLock) return
+	// 	this.canplayLock = true
+	// 	console.log('canplay!')
+	// }
 
 	// 获取媒体信息
-	async getInfo() {
+	async getInfo(id, type) {
 		return new Promise(async res => {
-			let videoInfo = await this.getMediaInfo('video'),
-				audioInfo = await this.getMediaInfo('audio')
+			let info = await this.getMediaInfo(type, this[`track_${type}`]),
+				{ url } = info,
+				obj  = {},
+				head = {}
 
-			Object.assign(this, { videoInfo, audioInfo })
-			Object.assign(this.mediaHeader, {
-				video: videoInfo.url,
-				audio: audioInfo.url
-			})
+			obj[`${type}`Info] = info
+			head[type] = url
+
+			Object.assign(this, obj)
+			Object.assign(this.mediaHeader, head)
 			res()
 		})
 	}
 
 	// 获取视频信息
-	getMediaInfo(mediaType) {
+	getMediaInfo(mediaType, quality) {
 		return new Promise(async res => {
-			var info = await xhr(`${baseUrl}/static/${mediaType}info`)
+			var info = await xhr(`${baseUrl}/static/${mediaType}info?q=${quality}`)
 			res(info.data)
 		})
 	}
 	
+	// 创建SourceBuffer
+	createSourceBuffer(type) {
+		let info = this[`${type}Info`]
+		let sourceBuffer = this[`${type}Buffer`] = this.mediaSource.addSourceBuffer(`mime_${type}`)
+		sourceBuffer.mediaType = type
+		sourceBuffer.duration  = info.duration
+		return sourceBuffer
+	}
+
 	// 媒体源准备完毕
 	async sourceOpen() {
-		let { $video, mediaSource, mimeVideo, mimeAudio, mediaHeader, videoInfo, audioInfo } = this
-		let videoBuffer = this.videoBuffer = mediaSource.addSourceBuffer(mimeVideo)
-		let audioBuffer = this.audioBuffer = mediaSource.addSourceBuffer(mimeAudio)
-
-		videoBuffer.mediaType = 'video'
-		videoBuffer.duration  = videoInfo.duration
-		audioBuffer.mediaType = 'audio'
-		audioBuffer.duration  = audioInfo.duration
-		
+		let { $video, mediaSource, mediaHeader, videoInfo, audioInfo } = this
+		let videoBuffer = this.createSourceBuffer('video')
+		let audioBuffer = this.createSourceBuffer('audio')
 		await this.initMediaStream(videoBuffer, mediaHeader.video)
 		await this.initMediaStream(audioBuffer, mediaHeader.audio)
-
 		$video.addEventListener('timeupdate', throttle(this.timeUpdata.bind(this)))
 	}
 
+
+
 	// 媒体流初始化
 	initMediaStream(sourceBuffer, url) {
+		let { $video } = this
 		return new Promise(async (resolve, reject) => {
 			xhr(url, { format: 'arraybuffer' }).then(async buffer => {
 				sourceBuffer.appendBuffer(buffer)
-				this.loadMediaBuffer(sourceBuffer)
+				console.log('currentTime: ', $video.currentTime)
+				this.loadMediaBuffer(sourceBuffer, $video.currentTime || 0)
 				resolve()
 			})
 		})
@@ -120,7 +116,8 @@ class IMS {
 	async loadMediaBuffer(sourceBuffer, duration = 0) {
 		return new Promise(async (resolve, reject) => {
 			let { mediaType } = sourceBuffer,
-				info = this[`info_${mediaType}`]
+				info = this[`info_${mediaType}`],
+				quality = this[`track_${mediaType}`]
 			if (info.lock) return console.log('lock')
 			info.lock = true
 			let { data: queues } = await xhr(`${baseUrl}/static/${mediaType}play?d=${duration}&m=${fragmentLimit}`),
@@ -129,7 +126,7 @@ class IMS {
 
 			// 更新队列
 			queues.forEach(([ start, end ], i) => {
-				fragments.push(`${baseUrl}/static/${mediaType}playback?s=${start}&e=${end}`)
+				fragments.push(`${baseUrl}/static/${mediaType}playback?s=${start}&e=${end}&q=${quality}`)
 			})
 
 			if (fragments.length) await this.MSELoadTrack(fragments, sourceBuffer, mediaType, queues)
@@ -156,7 +153,7 @@ class IMS {
 
 	// 播放结束
 	handleEnded() {
-		debugger
+		console.log('handleEnded')
 	}
 
 	// 加载轨道
@@ -245,6 +242,18 @@ class IMS {
 
 	get duration() {
 		return this.$video.duration
+	}
+
+	set trackAudio(value) {
+		if (this.track_audio === value) return
+		this.track_audio = value
+		this.getMediaInfo('audio', this.track_audio).then(async audioInfo => {
+			Object.assign(this, { audioInfo })
+			this.mediaHeader.audio = audioInfo.url
+			MediaSource.removeSourceBuffer(this.audioBuffer)
+			debugger
+			this.initMediaStream(this.audioBuffer, audioInfo.url)
+		})
 	}
 }
 
