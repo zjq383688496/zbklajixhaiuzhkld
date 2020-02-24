@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "main": "app.js",
     "scripts": {
-        "start": "nodemon bin/www"
+        "start": "nodemon bin/www.admin"
     },
     "dependencies": {
         "ioredis": "^4.14.1",
