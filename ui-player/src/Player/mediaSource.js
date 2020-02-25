@@ -3,8 +3,8 @@ import { xhr } from './utils/xhr'
 const baseUrl = 'http://localhost:4090'
 
 const fragmentLimit = 6
-const maxVideo = 4e6// 6e7
-const maxAudio = 1e6// 2e7
+const mime_video = 'video/mp4; codecs="avc1.64001f"'
+const mime_audio = 'audio/mp4; codecs="mp4a.40.2"'
 
 class IMS {
 	constructor(video, id, options = {}) {
@@ -18,13 +18,25 @@ class IMS {
 	currentTime = 0
 	mime_video  = 'video/mp4; codecs="avc1.64001f"'
 	mime_audio  = 'audio/mp4; codecs="mp4a.40.2"'
+	indexs = {
+		'360p': {
+			type:       'video',
+			updateTime:      0,
+			updateSpaceTime: 20,
+			endTime:         0,
+			lock:         false,
+			updateLock:   false,
+			sourceBuffer: null,
+			meta
+		}
+	}
 	info_video  = { updateTime: 0, updateSpaceTime: 20, lock: false, endTime: 0, updateLock: false, }
 	info_audio  = { updateTime: 0, updateSpaceTime: 20, lock: false, endTime: 0, updateLock: false, }
 	mediaHeader = {}
 	videoBuffer = null
 	audioBuffer = null
 	track_video = '360p'
-	track_audio = '96k'
+	track_audio = '160k'
 
 	timeout = null
 
@@ -43,7 +55,6 @@ class IMS {
 		let mediaSource = this.mediaSource = new MediaSource()
 		this.$video.src = URL.createObjectURL(mediaSource)
 		mediaSource.addEventListener('sourceopen', this.sourceOpen.bind(this))
-
 		// this.$video.addEventListener('canplaythrough', this.canplay.bind(this))
 	}
 
@@ -61,7 +72,7 @@ class IMS {
 				obj  = {},
 				head = {}
 
-			obj[`${type}`Info] = info
+			obj[`${type}Info`] = info
 			head[type] = url
 
 			Object.assign(this, obj)
@@ -81,7 +92,7 @@ class IMS {
 	// 创建SourceBuffer
 	createSourceBuffer(type) {
 		let info = this[`${type}Info`]
-		let sourceBuffer = this[`${type}Buffer`] = this.mediaSource.addSourceBuffer(`mime_${type}`)
+		let sourceBuffer = this[`${type}Buffer`] = this.mediaSource.addSourceBuffer(this[`mime_${type}`])
 		sourceBuffer.mediaType = type
 		sourceBuffer.duration  = info.duration
 		return sourceBuffer
@@ -92,21 +103,29 @@ class IMS {
 		let { $video, mediaSource, mediaHeader, videoInfo, audioInfo } = this
 		let videoBuffer = this.createSourceBuffer('video')
 		let audioBuffer = this.createSourceBuffer('audio')
-		await this.initMediaStream(videoBuffer, mediaHeader.video)
-		await this.initMediaStream(audioBuffer, mediaHeader.audio)
+		await this.initMediaStream(videoBuffer, mediaHeader)
+		await this.initMediaStream(audioBuffer, mediaHeader)
 		$video.addEventListener('timeupdate', throttle(this.timeUpdata.bind(this)))
 	}
 
-
-
 	// 媒体流初始化
-	initMediaStream(sourceBuffer, url) {
-		let { $video } = this
+	initMediaStream(sourceBuffer, header) {
+		let { $video } = this,
+			{ mediaType } = sourceBuffer,
+			url = header[mediaType]
 		return new Promise(async (resolve, reject) => {
 			xhr(url, { format: 'arraybuffer' }).then(async buffer => {
+				let me = this
+				function addEnd() {
+					debugger
+					sourceBuffer.removeEventListener('updateend', addEnd)
+					console.log('currentTime: ', $video.currentTime)
+					debugger
+					me.loadMediaBuffer(sourceBuffer, $video.currentTime || 0)
+				}
+				sourceBuffer.addEventListener('updateend', addEnd)
+				debugger
 				sourceBuffer.appendBuffer(buffer)
-				console.log('currentTime: ', $video.currentTime)
-				this.loadMediaBuffer(sourceBuffer, $video.currentTime || 0)
 				resolve()
 			})
 		})
@@ -120,7 +139,7 @@ class IMS {
 				quality = this[`track_${mediaType}`]
 			if (info.lock) return console.log('lock')
 			info.lock = true
-			let { data: queues } = await xhr(`${baseUrl}/static/${mediaType}play?d=${duration}&m=${fragmentLimit}`),
+			let { data: queues } = await xhr(`${baseUrl}/static/${mediaType}play?d=${duration}&m=${fragmentLimit}&q=${quality}`),
 				fragments = [],
 				{ index } = info
 
@@ -190,7 +209,6 @@ class IMS {
 				}
 				sourceBuffer.addEventListener('updateend', addNextFragment)
 				addNextFragment()
-
 			})
 		})
 	}
@@ -245,14 +263,20 @@ class IMS {
 	}
 
 	set trackAudio(value) {
-		if (this.track_audio === value) return
-		this.track_audio = value
-		this.getMediaInfo('audio', this.track_audio).then(async audioInfo => {
-			Object.assign(this, { audioInfo })
-			this.mediaHeader.audio = audioInfo.url
-			MediaSource.removeSourceBuffer(this.audioBuffer)
+		let me = this
+		if (me.track_audio === value) return
+		me.track_audio = value
+		me.getInfo('', 'audio').then(res => {
 			debugger
-			this.initMediaStream(this.audioBuffer, audioInfo.url)
+			me.handleClearBuffer(me.audioBuffer, 0, 0, () => {
+				debugger
+				me.initMediaStream(me.audioBuffer, me.mediaHeader)
+			})
+			// let aaa = me.mediaSource.removeSourceBuffer(me.audioBuffer)
+			// me.audioBuffer = null
+			// setTimeout(() => {
+				// let audioBuffer = me.createSourceBuffer('audio')
+			// }, 500)
 		})
 	}
 }
