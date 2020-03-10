@@ -89,6 +89,7 @@ class IMS {
 		let { $video, mediaSource, mediaHeader, videoInfo, audioInfo } = this
 		let videoBuffer = this.createSourceBuffer('video')
 		let audioBuffer = this.createSourceBuffer('audio')
+		// videoBuffer.mode ='sequence'
 		await this.initMediaStream(videoBuffer, mediaHeader)
 		await this.initMediaStream(audioBuffer, mediaHeader)
 		$video.addEventListener('timeupdate', throttle(this.timeUpdata.bind(this)))
@@ -255,13 +256,17 @@ class IMS {
 		if (this.track_video === value) return
 		this.track_video = value
 		let me = this
-		// let videoBuffer = this.createSourceBuffer('video')
 		let { mediaHeader, videoBuffer } = me
-		let myVideoTracks = videoBuffer.videoTracks
-		debugger
-		this.getInfo('id', 'video').then(res => {
-			me.initMediaStream(videoBuffer, mediaHeader)
-		})
+		if (this.mediaSource) {
+			this.mediaSource.removeSourceBuffer(videoBuffer)
+			setTimeout(() => {
+				let _videoBuffer = this.createSourceBuffer('video')
+				debugger
+			}, 1000)
+		}
+		// this.getInfo('id', 'video').then(res => {
+		// 	me.initMediaStream(videoBuffer, mediaHeader)
+		// })
 	}
 }
 
