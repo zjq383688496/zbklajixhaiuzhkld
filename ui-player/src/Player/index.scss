@@ -55,7 +55,13 @@ $control-h: 48px;
 		}
 	}
 	&-control-right {
-		
+		justify-content: space-evenly;
+		a {
+			color: #999;
+		}
+		.s-active {
+			color: #ff0;
+		}
 	}
 	&-control-bar {
 		width: 100%;

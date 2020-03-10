@@ -5,6 +5,9 @@ import { createMS } from './mediaSource'
 import Bar from './Bar'
 import './index.scss'
 
+const aTracks = [ '96k', '160k' ]
+const vTracks = [ '360p', '480p' ]
+
 export default class Player extends Component {
 	constructor(props) {
 		super(props)
@@ -15,7 +18,7 @@ export default class Player extends Component {
 		}
 	}
 	componentWillMount() {}
-	
+
 	componentDidMount() {
 		let { video } = this.refs
 		this.init(video)
@@ -47,14 +50,18 @@ export default class Player extends Component {
 	}
 
 	changeAudio = track => {
-		let { MS } = this.state
-		MS.trackAudio = track
+		this.state.MS.trackAudio = track
+	}
+	changeVideo = track => {
+		this.state.MS.trackVideo = track
 	}
 
 	render() {
-		let { currentTime, duration, MS } = this.state,
-			durationStr = time2Str(duration),
-			currentStr  = time2Str(currentTime)
+		let { currentTime, duration, MS = {} } = this.state
+		let durationStr = time2Str(duration),
+			currentStr  = time2Str(currentTime),
+			{ track_video, track_audio } = MS
+		console.log('track: ', track_video, track_audio)
 		return (
 			<div className="ui-player">
 				<div className="ui-player-video">
@@ -71,8 +78,8 @@ export default class Player extends Component {
 						<span className="ui-player-control-time">{currentStr} / {durationStr}</span>
 					</div>
 					<div className="ui-player-control-right">
-						<a onClick={e => this.changeAudio('96k')}>96k</a>
-						<a onClick={e => this.changeAudio('160k')}>160k</a>
+						{ vTracks.map((track, i) => <a key={i} className={track_video === track? 's-active': ''} onClick={e => this.changeVideo(track)}>{track}</a>) }
+						{ aTracks.map((track, i) => <a key={i} className={track_audio === track? 's-active': ''} onClick={e => this.changeAudio(track)}>{track}</a>) }
 					</div>
 				</div>
 			</div>

@@ -18,25 +18,13 @@ class IMS {
 	currentTime = 0
 	mime_video  = 'video/mp4; codecs="avc1.64001f"'
 	mime_audio  = 'audio/mp4; codecs="mp4a.40.2"'
-	indexs = {
-		'360p': {
-			type:       'video',
-			updateTime:      0,
-			updateSpaceTime: 20,
-			endTime:         0,
-			lock:         false,
-			updateLock:   false,
-			sourceBuffer: null,
-			meta
-		}
-	}
 	info_video  = { updateTime: 0, updateSpaceTime: 20, lock: false, endTime: 0, updateLock: false, }
 	info_audio  = { updateTime: 0, updateSpaceTime: 20, lock: false, endTime: 0, updateLock: false, }
 	mediaHeader = {}
 	videoBuffer = null
 	audioBuffer = null
-	track_video = '360p'
-	track_audio = '160k'
+	track_video = '480p'
+	track_audio = '96k'
 
 	timeout = null
 
@@ -55,14 +43,12 @@ class IMS {
 		let mediaSource = this.mediaSource = new MediaSource()
 		this.$video.src = URL.createObjectURL(mediaSource)
 		mediaSource.addEventListener('sourceopen', this.sourceOpen.bind(this))
-		// this.$video.addEventListener('canplaythrough', this.canplay.bind(this))
+		this.$video.addEventListener('error', this.error)
 	}
 
-	// canplay(e) {
-	// 	if (this.canplayLock) return
-	// 	this.canplayLock = true
-	// 	console.log('canplay!')
-	// }
+	error(e) {
+		console.error(e)
+	}
 
 	// 获取媒体信息
 	async getInfo(id, type) {
@@ -117,14 +103,11 @@ class IMS {
 			xhr(url, { format: 'arraybuffer' }).then(async buffer => {
 				let me = this
 				function addEnd() {
-					debugger
 					sourceBuffer.removeEventListener('updateend', addEnd)
 					console.log('currentTime: ', $video.currentTime)
-					debugger
 					me.loadMediaBuffer(sourceBuffer, $video.currentTime || 0)
 				}
 				sourceBuffer.addEventListener('updateend', addEnd)
-				debugger
 				sourceBuffer.appendBuffer(buffer)
 				resolve()
 			})
@@ -158,6 +141,7 @@ class IMS {
 	timeUpdata() {
 		let { $video, info_video, info_audio } = this,
 			{ currentTime, duration } = $video
+		console.log('update')
 		this.timeUpdataMedia(info_video, this.videoBuffer, currentTime)
 		this.timeUpdataMedia(info_audio, this.audioBuffer, currentTime)
 		if ((duration - currentTime) < 1) return this.handleEnded()
@@ -205,6 +189,8 @@ class IMS {
 						// console.log('fragments: ', fragments)
 						return MSEClearTrackBuffer.bind(me, sourceBuffer, resolve)()
 					}
+					console.clear()
+					console.log(buf)
 					sourceBuffer.appendBuffer(buf)
 				}
 				sourceBuffer.addEventListener('updateend', addNextFragment)
@@ -242,12 +228,10 @@ class IMS {
 			let { videoInfo, audioInfo, videoBuffer, audioBuffer } = this
 			if (!videoInfo.lock) {
 				videoInfo.index = {}
-				videoInfo.size  = 0
 				this.loadMediaBuffer(videoBuffer, value - 1)
 			}
 			if (!audioInfo.lock) {
 				audioInfo.index = {}
-				audioInfo.size  = 0
 				this.loadMediaBuffer(audioBuffer, value - 1)
 			}
 			this.$video.currentTime = value
@@ -263,20 +247,20 @@ class IMS {
 	}
 
 	set trackAudio(value) {
+		if (this.track_audio === value) return
+		this.track_audio = value
+	}
+
+	set trackVideo(value) {
+		if (this.track_video === value) return
+		this.track_video = value
 		let me = this
-		if (me.track_audio === value) return
-		me.track_audio = value
-		me.getInfo('', 'audio').then(res => {
-			debugger
-			me.handleClearBuffer(me.audioBuffer, 0, 0, () => {
-				debugger
-				me.initMediaStream(me.audioBuffer, me.mediaHeader)
-			})
-			// let aaa = me.mediaSource.removeSourceBuffer(me.audioBuffer)
-			// me.audioBuffer = null
-			// setTimeout(() => {
-				// let audioBuffer = me.createSourceBuffer('audio')
-			// }, 500)
+		// let videoBuffer = this.createSourceBuffer('video')
+		let { mediaHeader, videoBuffer } = me
+		let myVideoTracks = videoBuffer.videoTracks
+		debugger
+		this.getInfo('id', 'video').then(res => {
+			me.initMediaStream(videoBuffer, mediaHeader)
 		})
 	}
 }
