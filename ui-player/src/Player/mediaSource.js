@@ -1,4 +1,5 @@
 import { xhr } from './utils/xhr'
+import Mp4parse from '@/utils/mp4info'
 
 const baseUrl = 'http://localhost:4090'
 
@@ -109,6 +110,8 @@ class IMS {
 					me.loadMediaBuffer(sourceBuffer, $video.currentTime || 0)
 				}
 				sourceBuffer.addEventListener('updateend', addEnd)
+				let mp4  = new Mp4parse(buffer)
+				console.log(mp4)
 				sourceBuffer.appendBuffer(buffer)
 				resolve()
 			})
@@ -181,17 +184,13 @@ class IMS {
 						info.updateTime = lastEndTime
 						if (isEnd) {
 							info.updateLock = true
-							// debugger
 						} else {
 							info.updateTime = info.updateTime - updateSpaceTime
-							// debugger
 						}
 						info.endTime = lastEndTime
 						// console.log('fragments: ', fragments)
 						return MSEClearTrackBuffer.bind(me, sourceBuffer, resolve)()
 					}
-					console.clear()
-					console.log(buf)
 					sourceBuffer.appendBuffer(buf)
 				}
 				sourceBuffer.addEventListener('updateend', addNextFragment)
