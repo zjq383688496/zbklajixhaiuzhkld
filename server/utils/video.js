@@ -1,10 +1,11 @@
 const fs = require('fs')
-const { __tmp, sbin } = require('../config')
-const { exec } = require('child_process')
+const { __tmp, __encode, sbin } = require('../config')
+const { exec, spawn } = require('./child_process')
 
 module.exports = {
 	getMediaInfo,
-	saveMedia,
+	// saveMedia,
+	trackSeparate,
 }
 
 function saveMedia({ hash, name, path, size, type }) {
@@ -20,15 +21,18 @@ function saveMedia({ hash, name, path, size, type }) {
 
 // 获取媒体信息
 function getMediaInfo(path) {
-	return new Promise((resolve, reject) => {
-		exec(`${sbin.ffprobe} -v quiet -show_format -show_streams -print_format json ${path}`, (error, stdout, stderr) => {
-			if (error) {
-				console.error(`执行的错误: ${error}`)
-				return resolve()
-			}
-			var str = mediaInfoFormat(JSON.parse(stdout))
-			resolve(str)
-		})
+	return new Promise(async (resolve, reject) => {
+		let stdout = await exec(`${sbin.ffprobe} -v quiet -show_format -show_streams -print_format json ${path}`)
+		var str = mediaInfoFormat(JSON.parse(stdout))
+		resolve(str)
+		// exec(`${sbin.ffprobe} -v quiet -show_format -show_streams -print_format json ${path}`, (error, stdout, stderr) => {
+		// 	if (error) {
+		// 		console.error(`执行的错误: ${error}`)
+		// 		return resolve()
+		// 	}
+		// 	var str = mediaInfoFormat(JSON.parse(stdout))
+		// 	resolve(str)
+		// })
 	})
 }
 
@@ -80,10 +84,28 @@ function mediaInfoFormat(data) {
 			size_aspect_ratio,										// 尺寸比
 			original_width:  c_ratio < _ratio? c_width:  _width,	// 原始宽
 			original_height: c_ratio < _ratio? c_height: _height,	// 原始高
-			'px/bit': coded_width * coded_height * frame_rate / bit_rate
+			px_bit: coded_width * coded_height * frame_rate / bit_rate
 		})
 		stream.pixel_total = stream.original_width * stream.original_height		// 帧像素数
 	})
 
 	return newData
+}
+
+// 轨道分离
+function trackSeparate({ fotmat, audio, video }, path, hash) {
+	let output = `${__encode}/hash`
+	return new Promise(resolve => {
+		// let 
+		// Promise.all([
+
+		// ])
+		debugger
+	})
+}
+
+function separateVideo(path) {
+	return new Promise(resolve => {
+
+	})
 }

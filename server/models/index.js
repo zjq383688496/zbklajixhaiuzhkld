@@ -18,7 +18,7 @@ const Audio = require('./audio')(sequelize, Sequelize)
 Media.belongsToMany(Video, { as: 'videos', through: 'parentId', foreignKey: 'id' })
 Media.belongsToMany(Audio, { as: 'audios', through: 'parentId', foreignKey: 'id' })
 
-sequelize.sync()
+// sequelize.sync()
 
 module.exports = {
 	Media,

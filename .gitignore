@@ -63,3 +63,5 @@ typings/
 
 public/
 publicServer/
+.tmp
+.encode

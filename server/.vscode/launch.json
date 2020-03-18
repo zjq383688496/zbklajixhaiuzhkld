@@ -14,7 +14,7 @@
             "type": "node",
             "request": "launch",
             "name": "启动程序:task",
-            "program": "${workspaceFolder}/bin/www.task"
+            "program": "${workspaceFolder}/app.task.js"
         }
     ]
 }

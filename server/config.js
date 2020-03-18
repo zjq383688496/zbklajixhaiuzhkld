@@ -3,6 +3,7 @@ const path = require('path')
 const config = {
 	__tmp: _path('../tmp'),
 	__dirname: __dirname,
+	__encode: _path('./.encode'),
 	sbin: {
 		ffmpeg: _path('./sbin/ffmpeg'),
 		ffprobe: _path('./sbin/ffprobe')
