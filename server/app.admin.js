@@ -6,6 +6,9 @@ const logger  = require('koa-logger')
 const path    = require('path')
 const app     = new Koa()
 
+const sequelize = require('./models')
+const redis     = require('./redis/admin')
+
 // 错误处理
 onerror(app)
 
@@ -21,6 +24,8 @@ app.use(body({
 app.use(json())
 app.use(logger())
 
+global.sequelize = sequelize
+global.redis = redis
 // 路由
 // app.use(require('koa-static')(__dirname + '/tmp', {
 // 	hidden: true,

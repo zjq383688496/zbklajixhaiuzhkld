@@ -90,7 +90,6 @@ class IMS {
 		let { $video, mediaSource, mediaHeader, videoInfo, audioInfo } = this
 		let videoBuffer = this.createSourceBuffer('video')
 		let audioBuffer = this.createSourceBuffer('audio')
-		// videoBuffer.mode ='sequence'
 		await this.initMediaStream(videoBuffer, mediaHeader)
 		await this.initMediaStream(audioBuffer, mediaHeader)
 		$video.addEventListener('timeupdate', throttle(this.timeUpdata.bind(this)))
@@ -111,7 +110,8 @@ class IMS {
 				}
 				sourceBuffer.addEventListener('updateend', addEnd)
 				let mp4  = new Mp4parse(buffer)
-				console.log(mp4)
+				let playlist = mp4.getFragments(0, 8)
+				console.log(playlist)
 				sourceBuffer.appendBuffer(buffer)
 				resolve()
 			})

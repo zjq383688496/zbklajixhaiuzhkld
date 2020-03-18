@@ -26,19 +26,6 @@ const routes =  [
 		component: VideoAdd,
 		// fetchInitialData: () => videoList()
 	},
-	/*{
-		name: 'video',
-		path: '/video/edit/:id',
-		exact: true,
-		component: VideoEdit,
-		// fetchInitialData: () => videoList()
-	},
-	{
-		name: 'video',
-		path: '/video/:id',
-		component: VideoDetail,
-		// fetchInitialData: () => videoList()
-	},*/
 ]
 
 export default routes

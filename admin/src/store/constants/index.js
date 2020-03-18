@@ -1,0 +1,1 @@
+export const UPDATE_ROUTE   = 'UPDATE_ROUTE'	// 更新 路由

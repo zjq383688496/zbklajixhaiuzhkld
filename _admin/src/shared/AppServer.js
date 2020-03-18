@@ -20,6 +20,7 @@ class App extends Component {
 	render() {
 		return (
 			<div>
+				<Navbar />
 				<Shell style={{border: '1px solid #eee'}}>
 					<ShellContent>
 						<Switch>

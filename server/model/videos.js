@@ -1,11 +1,10 @@
 const fs = require('fs')
-const { redis, video } = require('../utils')
+const { video } = require('../utils')
 const { __tmp, sbin } = require('../config')
 
 const videos = {
 	// 列表
 	list: async (ctx, next) => {
-		ctx.body = await redis.lrange('videos', 0, 100)
 	},
 	// 创建
 	create: async (ctx, next) => {

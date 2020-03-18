@@ -15,10 +15,10 @@ function parse(stream) {
 
 // 获取视频信息
 function getInfo() {
-	let { stream, sidx } = this,
+	let { stream, sidx, moov: { mvhd } } = this,
 		{ entrys, timescale } = sidx,
 		position  = stream.getPosition(),
-		fragments = [],
+		fragments = this.fragments = [],
 		startTime = 0
 
 	entrys.forEach(({ referenced_size, subsegment_duration }) => {
@@ -26,16 +26,21 @@ function getInfo() {
 			start    = position + 1
 		position += referenced_size
 		let data = {
+			range: {
+				start,
+				end: position
+			},
+			time: {
+				start: startTime,
+			},
 			duration,
-			start,
-			end: position,
-			startTime,
 		}
 		fragments.push(data)
 		startTime += duration
-		data.endTime = startTime
+		data.time.end = startTime
 	})
-	this.fragments = fragments
+	this.fragment_count = fragments.length
+	this.duration = mvhd.duration / mvhd.timescale
 }
 
 
@@ -44,6 +49,20 @@ class Mp4parse {
 		let stream = this.stream = new DataBuffer(buffer)
 		parse.bind(this, stream)()
 		getInfo.bind(this)()
+	}
+	getFragments(time, amount = 1) {
+		let { duration, fragments, fragment_count } = this,
+			initIdx  = time / duration * fragment_count >> 0,
+			playlist
+		function getIndex(idx) {
+			let { time: { start, end } } = fragments[idx]
+			if (time >= start && time < end) return idx
+			else if (time < start) return getIndex(--idx)
+			else return getIndex(++idx)
+		}
+		initIdx  = getIndex(initIdx)
+		playlist = fragments.slice(initIdx, initIdx + amount)
+		return playlist
 	}
 }
 

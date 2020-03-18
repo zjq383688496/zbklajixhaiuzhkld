@@ -121,6 +121,7 @@ const serverConfig = {
 			{
 				test: /\.css/,
 				use: [
+					'isomorphic-style-loader',
 					MiniCssExtractPlugin.loader,
 					'css-loader'
 				]
@@ -128,6 +129,7 @@ const serverConfig = {
 			{
 				test: /\.less/,
 				use: [
+					'isomorphic-style-loader',
 					MiniCssExtractPlugin.loader,
 					'css-loader',
 					'less-loader'

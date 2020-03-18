@@ -6,7 +6,6 @@ import Upload from '@component/Upload'
 import './index.less'
 
 const { random } = Math
-
 const {
 	Item:   FormItem,
 	Error:  FormError,
@@ -56,6 +55,12 @@ class Video extends Component {
 				}, 500)
 			}
 		})
+	}
+	routeTo = url => {
+		return e => {
+			e.preventDefault()
+			this.props.history.push(url)
+		}
 	}
 	render() {
 		// const { loading } = this.state
@@ -107,6 +112,7 @@ class Video extends Component {
 				<FormItem wrapperCol={{ offset: 6 }} >
 					<FormSubmit validate type="primary" onClick={(v, e) => console.log(v, e)} style={{marginRight: 10}}>Submit</FormSubmit>
 					<FormReset >Reset</FormReset>
+					<Button onClick={this.routeTo('/video')}>返回</Button>
 				</FormItem>
 			</Form>
 		)

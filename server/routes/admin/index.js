@@ -1,14 +1,15 @@
 const router = require('koa-router')()
-const { videos } = require('../../model')
+const { media } = require('../../proxy')
 
 router.prefix('/admin')
 
 router
 	// 视频相关
-	.get('/videos',      videos.list)
-	.put('/videos',      videos.create)
-	.get('/videos/:id',  videos.detail)
-	.post('/videos/:id', videos.update)
-	.del('/videos/:id',  videos.delete)
+	.get('/videos',      media.list)
+	.post('/videos',      media.create)
+	.get('/videos/:id',  media.detail)
+	.post('/videos/upload',  media.upload)
+	// .post('/videos/:id', media.update)
+	// .del('/videos/:id',  media.delete)
 
 module.exports = router
