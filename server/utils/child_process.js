@@ -1,10 +1,10 @@
 const { exec, spawn } = require('child_process')
 
-function _spawn(cmd, args = [], options = {}) {
+function _spawn(cmd, args = [], options = {}, hasLog = true) {
 	return new Promise(res => {
 		let str = ''
 		const ls = spawn(cmd, args.split(/\s+/), options)
-		ls.stdout.on('data', (data) => str += data)
+		if (hasLog) ls.stdout.on('data', (data) => str += data)
 		ls.on('close', code => {
 			res(str)
 		})

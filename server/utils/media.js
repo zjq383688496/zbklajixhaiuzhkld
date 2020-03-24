@@ -14,21 +14,21 @@ const profileMap = {
     2160: 'high',
 }
 const presetMap = {
-    240:  'veryslow',
-    360:  'slower',
-    480:  'slower',
+    240:  'slow',
+    360:  'slow',
+    480:  'slow',
     720:  'slow',
     1080: 'medium',
     2160: 'medium',
 }
-const levelMap = {
-    240:  '3',
-    360:  '3',
-    480:  '3',
-    720:  '3.1',
-    1080: '3.2',
-    2160: '4',
-}
+// const levelMap = {
+//     240:  '3',
+//     360:  '3',
+//     480:  '3',
+//     720:  '3.1',
+//     1080: '3.2',
+//     2160: '4',
+// }
 
 module.exports = {
     getInfo,
@@ -65,11 +65,12 @@ function toFmp4Video(source, dir, name, width, height, fps) {
             output  = `${dir}/${name}`,
             profile = profileMap[height],
             preset  = presetMap[height],
-            level   = levelMap[height],
-            ffcfg   = `-y -i ${source} -s ${width}x${height} -an -c:v libx264 -profile:v ${profile} -level ${level} -preset ${preset} -b:v ${bit}k -f mp4 ${tmp}`
+            // level   = levelMap[height],
+            // ffcfg   = `-y -i ${source} -s ${width}x${height} -an -c:v libx264 -profile:v ${profile} -level ${level} -preset ${preset} -b:v ${bit}k -f mp4 ${tmp}`
+            ffcfg   = `-y -i ${source} -s ${width}x${height} -an -c:v libx264 -profile:v ${profile} -preset ${preset} -b:v ${bit}k -f mp4 ${tmp}`
         console.log(ffcfg)
-        await spawn(sbin.ffmpeg, ffcfg)
-        await spawn(sbin.mp4fragment, `--track video --index --fragment-duration 20000 ${tmp} ${output}`)
+        await spawn(sbin.ffmpeg, ffcfg, {}, false)
+        await spawn(sbin.mp4fragment, `--track video --index --fragment-duration 20000 ${tmp} ${output}`, {}, false)
         await fs.unlinkSync(tmp)
         resolve(output)
     })
