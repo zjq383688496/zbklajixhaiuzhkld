@@ -19,9 +19,10 @@ function getInfo() {
 		{ entrys, timescale } = sidx,
 		position  = stream.getPosition(),
 		fragments = this.fragments = [],
+		length    = entrys.length,
 		startTime = 0
 
-	entrys.forEach(({ referenced_size, subsegment_duration }) => {
+	entrys.forEach(({ referenced_size, subsegment_duration }, i) => {
 		let duration = subsegment_duration / timescale,
 			start    = position + 1
 		position += referenced_size
@@ -38,6 +39,7 @@ function getInfo() {
 		fragments.push(data)
 		startTime += duration
 		data.time.end = startTime
+		data.isEnd = i === length - 1
 	})
 	this.fragment_count = fragments.length
 	this.duration = mvhd.duration / mvhd.timescale

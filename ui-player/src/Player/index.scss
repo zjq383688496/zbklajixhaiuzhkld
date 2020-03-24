@@ -5,7 +5,12 @@ $control-h: 48px;
 	width: 640px;
 	height: $player-h + $control-h;
 	background-color: #000;
-	
+	// video::-internal-media-controls-loading-panel {
+	// 	display: none;
+	// }
+	video::-webkit-media-controls {
+		display: none;
+	}
 	div {
 		display: flex;
 	}

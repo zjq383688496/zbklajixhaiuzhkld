@@ -33,7 +33,7 @@ export default class Player extends Component {
 	init = dom => {
 		if (!dom) return
 		this.$video = dom
-		let MS = createMS(dom, '456432345', {})
+		let MS = createMS(dom, 1, {})
 		this.setState({ MS }, this.handleEvent)
 	}
 
@@ -56,6 +56,10 @@ export default class Player extends Component {
 		this.state.MS.trackVideo = track
 	}
 
+	play = () => {
+		this.$video.play()
+	}
+
 	render() {
 		let { currentTime, duration, MS = {} } = this.state
 		let durationStr = time2Str(duration),
@@ -72,7 +76,7 @@ export default class Player extends Component {
 						<Bar currentTime={currentTime} duration={duration} MS={MS} timelineUpdate={this.timelineUpdate} />
 					</div>
 					<div className="ui-player-control-left">
-						<a className="icon-play"></a>
+						<a className="icon-play" onClick={this.play}></a>
 						{/*<a className="icon-pause"></a>*/}
 						{/*<a className="icon-next"></a>*/}
 						<span className="ui-player-control-time">{currentStr} / {durationStr}</span>

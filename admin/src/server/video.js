@@ -8,7 +8,7 @@ module.exports = {
 	create: config => Fetch.post(`${baseUrl}`, config),
 
 	// 编辑
-	// update: config => Fetch.put(`${baseUrl}`, config),
+	update: config => Fetch.post(`${baseUrl}/${config.id}`, config),
 
 	// 查看详情
 	detail: id => Fetch.get(`${baseUrl}/${id}`),

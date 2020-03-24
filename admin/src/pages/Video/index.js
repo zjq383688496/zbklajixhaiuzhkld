@@ -2,6 +2,13 @@ import React from 'react'
 import { Button, Table } from '@alifd/next'
 const { Column: TableColumn } = Table
 
+const statusMap = {
+	0: '冻结',
+	1: '未上传',
+	2: '审核中',
+	3: '审核成功',
+	4: '审核失败',
+}
 
 export default class Video extends React.Component {
 	constructor(props) {
@@ -21,6 +28,10 @@ export default class Video extends React.Component {
 			<Button key={2} onClick={e => this.delete(id)}>删除</Button>,
 		]
 	}
+	status = (value, index, record) => {
+		let { status } = record
+		return <span>资源{statusMap[status]}</span>
+	}
 	render() {
 		let { list } = this.state
 		return (
@@ -28,10 +39,11 @@ export default class Video extends React.Component {
 				<Button type="primary" onClick={toRoute.bind(this, '/video/add')}>上传视频</Button>
 				<br /><br />
 				<Table dataSource={list}>
-					<TableColumn title="id" dataIndex="id"/>
-					<TableColumn title="title" dataIndex="title"/>
-					<TableColumn title="description" dataIndex="description"/>
-					<TableColumn cell={this.control}/>
+					<TableColumn title="ID" dataIndex="id"/>
+					<TableColumn title="标题" dataIndex="title"/>
+					<TableColumn title="描述" dataIndex="description"/>
+					<TableColumn title="状态" cell={this.status}/>
+					<TableColumn title="操作" cell={this.control}/>
 				</Table>
 			</div>
 		)

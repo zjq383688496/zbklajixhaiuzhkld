@@ -43,17 +43,39 @@ export default class VideoAdd extends Component {
 		this.setState({ body })
 	}
 	submit = () => {
-		let { body } = this.state
-		video.create(body).then(res => {
-			toRoute.bind(this, '/video')
+		let { body } = this.state,
+			{ id } = body,
+			API = video[id? 'update': 'create']
+
+		API(body).then(res => {
+			toRoute.bind(this, '/video')()
 		})
 	}
 	onResult = data => {
 		console.log(data)
 	}
+	renderUpload = () => {
+		let { id, title, description, status } = this.state.body,
+			dom
+		if (!id) return null
+		switch (status) {
+			case 1:
+			case 3:
+			case 4:
+				dom = <Upload params={{id}} max={3e9} accept={'.mp4,.mkv,.avi,.mov'} onResult={this.onResult}/>
+				break
+			case 2:
+				dom = '审核中...'
+				break
+			default:
+				dom = null
+		}
+		return dom
+	}
 	render() {
 		let { body } = this.state,
-			{ id, title, description } = body
+			{ id, title, description, status } = body,
+			uploadDom = this.renderUpload()
 
 		return (
 			<Form {...formItemLayout} style={{ width: 500 }}>
@@ -65,9 +87,7 @@ export default class VideoAdd extends Component {
 					<TextArea value={description} maxLength={20} hasLimitHint placeholder="请输入" onChange={val => this.update('description', val)} />
 				</FormItem>
 
-				{
-					id? <Upload params={{id}} max={3e9} accept={'.mp4,.mkv,.avi,.mov'} onResult={this.onResult}/>: null
-				}
+				{ uploadDom }
 
 				<FormItem wrapperCol={{ offset: 6 }} >
 					<Button type="primary" onClick={this.submit} style={{marginRight: 10}}>提交</Button>

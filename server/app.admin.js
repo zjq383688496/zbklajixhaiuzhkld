@@ -16,7 +16,7 @@ onerror(app)
 app.use(body({
 	multipart: true,
 	formidable: {
-		maxFileSize: 200 * 1024 * 1024,
+		maxFileSize: 10 * 1024 * 1024 * 1024,
 		hash: 'md5',
 		uploadDir: path.resolve(__dirname, './.tmp')
 	}
@@ -27,9 +27,11 @@ app.use(logger())
 global.sequelize = sequelize
 global.redis = redis
 // 路由
-// app.use(require('koa-static')(__dirname + '/tmp', {
+// console.log(path.resolve(__dirname, './.encode'))
+// debugger
+// app.use(require('koa-static')(path.resolve(__dirname, './.encode'), {
 // 	hidden: true,
-// 	defer: true
+// 	// defer: true
 // }))
 require('./config.routes')(app, 'admin')
 

@@ -2,11 +2,14 @@ const path = require('path')
 
 const config = {
 	__tmp: _path('../tmp'),
-	__dirname: __dirname,
+	dirname: __dirname,
 	__encode: _path('./.encode'),
 	sbin: {
-		ffmpeg: _path('./sbin/ffmpeg'),
-		ffprobe: _path('./sbin/ffprobe')
+		ffmpeg:      _path('./sbin/ffmpeg'),
+		ffprobe:     _path('./sbin/ffprobe'),
+		mp4dump:     _path('./sbin/mp4dump'),
+		mp4fragment: _path('./sbin/mp4fragment'),
+		mp4info:     _path('./sbin/mp4info')
 	},
 	upyun: {
 		bucket: 'rongyi',
@@ -15,7 +18,7 @@ const config = {
 	},
 	redis: {
 		port: 6381,
-		host: '10.1.106.239',
+		host: '127.0.0.1',
 		// family: 4,
 		// password: '',
 		db: 0
@@ -25,7 +28,7 @@ const config = {
 		user: 'root',
 		pass: 'zjqzjqzjq',
 		opts: {
-			host: '10.1.106.239',
+			host: '127.0.0.1',
 			dialect: 'mysql',
 			// pool: {
 			// 	max: 5,

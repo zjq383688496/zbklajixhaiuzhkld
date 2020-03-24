@@ -15,8 +15,8 @@ const Media = require('./media')(sequelize, Sequelize)
 const Video = require('./video')(sequelize, Sequelize)
 const Audio = require('./audio')(sequelize, Sequelize)
 
-Media.belongsToMany(Video, { as: 'videos', through: 'parentId', foreignKey: 'id' })
-Media.belongsToMany(Audio, { as: 'audios', through: 'parentId', foreignKey: 'id' })
+Media.belongsToMany(Video, { as: 'videos', through: 'mediaBe', foreignKey: 'id' })
+Media.belongsToMany(Audio, { as: 'audios', through: 'mediaBe', foreignKey: 'id' })
 
 // sequelize.sync()
 

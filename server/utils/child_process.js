@@ -5,7 +5,9 @@ function _spawn(cmd, args = [], options = {}) {
 		let str = ''
 		const ls = spawn(cmd, args.split(/\s+/), options)
 		ls.stdout.on('data', (data) => str += data)
-		ls.on('close', code => res(str))
+		ls.on('close', code => {
+			res(str)
+		})
 	})
 }
 
