@@ -89,19 +89,19 @@ function updataTracks(info, tracks, parentId, queue, hash) {
     return new Promise(async resolve => {
         let { video, audio } = info,
             { video: _video, audio: _audio } = tracks,
-            { video: $video, audio: $audio } = queue
-        Promise.all(audio.map((a, i) => updataAudio(_audio[i], parentId, i, 0, $audio[i], hash))).then(async res => {
-            let videoTask = await updataVideo(_video, parentId, 0, $video, hash)
+            { video: $video, audio: $audio } = queue,
+            parentCode = salt(parentId + '')
+        Promise.all(audio.map((a, i) => updataAudio(_audio[i], parentId, parentCode, i, 0, $audio[i], hash))).then(async res => {
+            let videoTask = await updataVideo(_video, parentId, parentCode, 0, $video, hash)
             resolve()
         })
     })
 }
 // 更新视频
-function updataVideo(path, parentId, quality, queue, hash) {
+function updataVideo(path, parentId, parentCode, quality, queue, hash) {
     return new Promise(async resolve => {
         let result = await Video.findOne({ where: { parentId, quality } })
         if (result) return resolve()
-        let parentCode = salt(parentId + '')
         let info = await getInfo(path),
             { codecs_string, duration, frame_rate, size, media, width, height } = info,
             idx = 0
@@ -109,7 +109,7 @@ function updataVideo(path, parentId, quality, queue, hash) {
         while(true) {
             let q = queue[idx]
             if (!q) break
-            await addVideoQueue(path, parentId, hash, q)
+            await addVideoQueue(path, parentId, parentCode, hash, q)
             ++idx
         }
 
@@ -129,7 +129,7 @@ function updataVideo(path, parentId, quality, queue, hash) {
     })
 }
 // 更新音频
-function updataAudio(path, parentId, trackId, quality, queue, hash) {
+function updataAudio(path, parentId, parentCode, trackId, quality, queue, hash) {
     return new Promise(async resolve => {
         let result = await Audio.findOne({ where: { parentId, trackId, quality } })
         if (result) return resolve()
@@ -141,7 +141,7 @@ function updataAudio(path, parentId, trackId, quality, queue, hash) {
         while(true) {
             let q = queue[idx]
             if (!q) break
-            await addAudioQueue(path, parentId, hash, q, trackId)
+            await addAudioQueue(path, parentId, parentCode, hash, q, trackId)
             ++idx
         }
 
@@ -159,7 +159,7 @@ function updataAudio(path, parentId, trackId, quality, queue, hash) {
     })
 }
 // 新增编码队列
-function addVideoQueue(source, parentId, hash, { width, height, fps }) {
+function addVideoQueue(source, parentId, parentCode, hash, { width, height, fps }) {
     return new Promise(async resolve => {
         let quality = qualityMap[height]
         let result  = await Video.findOne({ where: { parentId, quality } })
@@ -185,6 +185,7 @@ function addVideoQueue(source, parentId, hash, { width, height, fps }) {
         // 写入数据库
         await Video.create({
             parentId,
+            parentCode,
             width,
             height,
             quality,
@@ -195,7 +196,7 @@ function addVideoQueue(source, parentId, hash, { width, height, fps }) {
         resolve(data)
     })
 }
-function addAudioQueue(source, parentId, hash, bit, trackId) {
+function addAudioQueue(source, parentId, parentCode, hash, bit, trackId) {
     return new Promise(async resolve => {
         let quality = qualityMap[bit]
         let result  = await Audio.findOne({ where: { parentId, quality, trackId } })
@@ -220,6 +221,7 @@ function addAudioQueue(source, parentId, hash, bit, trackId) {
         // 写入数据库
         await Audio.create({
             parentId,
+            parentCode,
             quality,
             trackId
         })
