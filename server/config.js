@@ -36,7 +36,8 @@ const config = {
 			// 	idle: 10000
 			// }
 		}
-	}
+	},
+	__salt: 'cWRWpvPB2GNhY9Pt6diSDwK6s6SqxMHmizfDG352ohwQCdcDxvNNTPOC4KPfSn1s'
 }
 
 module.exports = config

@@ -4,6 +4,7 @@ let { media_parse } = task
 let { __encode } = require('../../config')
 const { getMediaInfo, trackSeparate } = require('../../utils/video')
 const { getInfo } = require('../../utils/media')
+const { salt } = require('../../utils/crypto')
 const { Media, Video, Audio } = sequelize
 
 const extMap  = { 1: 'p', 2: 'k' }
@@ -100,23 +101,22 @@ function updataVideo(path, parentId, quality, queue, hash) {
     return new Promise(async resolve => {
         let result = await Video.findOne({ where: { parentId, quality } })
         if (result) return resolve()
+        let parentCode = salt(parentId + '')
         let info = await getInfo(path),
             { codecs_string, duration, frame_rate, size, media, width, height } = info,
             idx = 0
-            debugger
 
         while(true) {
             let q = queue[idx]
             if (!q) break
             await addVideoQueue(path, parentId, hash, q)
-            // debugger
             ++idx
-            continue
         }
 
         // 写入数据库
         await Video.create({
             parentId,
+            parentCode,
             mimeType: codecs_string,
             fps: frame_rate,
             duration,
@@ -133,21 +133,22 @@ function updataAudio(path, parentId, trackId, quality, queue, hash) {
     return new Promise(async resolve => {
         let result = await Audio.findOne({ where: { parentId, trackId, quality } })
         if (result) return resolve()
+        let parentCode = salt(parentId + '')
         let info = await getInfo(path),
             { codecs_string, duration, size, media } = info,
             idx = 0
-        debugger
+            
         while(true) {
             let q = queue[idx]
             if (!q) break
             await addAudioQueue(path, parentId, hash, q, trackId)
             ++idx
-            continue
         }
 
         // 写入数据库
         await Audio.create({
             parentId,
+            parentCode,
             trackId,
             mimeType: codecs_string,
             duration,

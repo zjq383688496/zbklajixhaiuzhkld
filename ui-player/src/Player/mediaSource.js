@@ -177,15 +177,15 @@ class IMS {
 	// 加载视频内容
 	async loadMediaBuffer(sourceBuffer, duration = 0) {
 		return new Promise(async (resolve, reject) => {
-			let { mediaType } = sourceBuffer,
+			let { mediaType }    = sourceBuffer,
+				{ _currentTime } = this,
 				Mp4     = this[`${mediaType}Mp4`],
 				info    = this[`info_${mediaType}`],
 				quality = this[`track_${mediaType}`],
 				api     = this.mediaHeader[mediaType]
 			if (info.lock) return console.log('lock')
 			info.lock = true
-
-			let queues = Mp4.getFragments(0, fragmentLimit),
+			let queues = Mp4.getFragments(_currentTime, fragmentLimit),
 				fragments = []
 
 			// 更新队列
@@ -284,16 +284,16 @@ class IMS {
 	set currentTime(value) {
 		if (!this.$video) return
 		(async () => {
+			this._currentTime = this.$video.currentTime = value
 			let { videoInfo, audioInfo, videoBuffer, audioBuffer } = this
 			if (!videoInfo.lock) {
 				videoInfo.index = {}
-				this.loadMediaBuffer(videoBuffer, value - 1)
+				this.loadMediaBuffer(videoBuffer, value)
 			}
 			if (!audioInfo.lock) {
 				audioInfo.index = {}
-				this.loadMediaBuffer(audioBuffer, value - 1)
+				this.loadMediaBuffer(audioBuffer, value)
 			}
-			this.$video.currentTime = value
 		})()
 	}
 

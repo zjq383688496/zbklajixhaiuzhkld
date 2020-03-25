@@ -3,11 +3,12 @@ const fs = require('fs')
 const { __encode } = require('../config')
 const { Media, Video, Audio } = sequelize
 const { getMediaInfo } = require('../utils/video')
+const { salt } = require('../utils/crypto')
 
 
 // 获取媒体列表
 async function list(ctx, next) {
-	let result = await Media.findAll()
+	let result = await Media.findAll({ attributes: { exclude: ['userId', 'baseUrl'] } })
 	if (result && result.length >= 0) ctx.resHandle('0000', result)
 }
 
@@ -15,9 +16,10 @@ async function list(ctx, next) {
 async function detail(ctx, next) {
 	let { params } = ctx
 	let result = await Media.findOne({ where: params })
-	let { id } = result
-	let videos = await Video.findAll({ where: { parentId: id }})
-	let audios = await Audio.findAll({ where: { parentId: id }})
+	let { id } = result,
+		parentId   = id
+	let videos = await Video.findAll({ where: { parentId }})
+	let audios = await Audio.findAll({ where: { parentId }})
 	videos = videos.filter(item => item.url)
 	audios = audios.filter(item => item.url)
 	result.dataValues.streams = JSON.parse(JSON.stringify([ ...videos, ...audios ]))
@@ -27,8 +29,11 @@ async function detail(ctx, next) {
 // 创建媒体
 async function create(ctx, next) {
 	let { body } = ctx.request
-	let result = await Media.create(body)
-	ctx.resHandle('0000', result)
+	let result = await Media.create(body),
+		{ id } = result,
+		code   = salt(id + '')
+	await Media.update({ id, code }, { where: { id } })
+	ctx.resHandle('0000', true)
 }
 // 更新媒体
 async function update(ctx, next) {
