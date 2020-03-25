@@ -44,7 +44,7 @@ module.exports = parse
 function queueParse(info, tracks) {
     let { video, audio } = info,
         { video: _video, audio: _audio } = tracks
-    
+
     let videoQuality = videoParse(video, _video)
     let audioQuality = audio.map((a, i) => audioParse(a, _audio[i]))
     return { video: videoQuality, audio: audioQuality }
@@ -103,6 +103,7 @@ function updataVideo(path, parentId, quality, queue, hash) {
         let info = await getInfo(path),
             { codecs_string, duration, frame_rate, size, media, width, height } = info,
             idx = 0
+            debugger
 
         while(true) {
             let q = queue[idx]
@@ -135,7 +136,7 @@ function updataAudio(path, parentId, trackId, quality, queue, hash) {
         let info = await getInfo(path),
             { codecs_string, duration, size, media } = info,
             idx = 0
-
+        debugger
         while(true) {
             let q = queue[idx]
             if (!q) break

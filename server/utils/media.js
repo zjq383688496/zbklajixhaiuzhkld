@@ -42,7 +42,7 @@ function getInfo(path) {
     return new Promise(async (resolve, reject) => {
         if (!fs.existsSync(path)) return resolve()
         let stat = fs.statSync(path)
-		let stdout = await spawn(sbin.mp4info, `--format json ${path}`)
+        let stdout = await spawn(sbin.mp4info, `--format json ${path}`)
 		var str = infoFormat(JSON.parse(stdout), stat)
 		resolve(str)
 	})
@@ -69,8 +69,13 @@ function toFmp4Video(source, dir, name, width, height, fps) {
             // ffcfg   = `-y -i ${source} -s ${width}x${height} -an -c:v libx264 -profile:v ${profile} -level ${level} -preset ${preset} -b:v ${bit}k -f mp4 ${tmp}`
             ffcfg   = `-y -i ${source} -s ${width}x${height} -an -c:v libx264 -profile:v ${profile} -preset ${preset} -b:v ${bit}k -f mp4 ${tmp}`
         console.log(ffcfg)
+        console.log('开始编码!')
         await spawn(sbin.ffmpeg, ffcfg, {}, false)
+        console.log('编码完成!')
+        debugger
+        console.log('开始分片!')
         await spawn(sbin.mp4fragment, `--track video --index --fragment-duration 20000 ${tmp} ${output}`, {}, false)
+        console.log('分片完成!')
         await fs.unlinkSync(tmp)
         resolve(output)
     })

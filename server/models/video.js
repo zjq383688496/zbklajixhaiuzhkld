@@ -9,7 +9,7 @@ module.exports = function(sequelize, DataTypes) {
 		fps:       { type: DataTypes.FLOAT,   comment: '帧速率' },
 		bitrate:   { type: DataTypes.FLOAT,   comment: '比特率' },
 		duration:  { type: DataTypes.FLOAT,   comment: '时长(秒)' },
-		size:      { type: DataTypes.INTEGER, comment: '大小' },
+		size:      { type: DataTypes.BIGINT(11), comment: '大小' },
 		url:       { type: DataTypes.STRING,  comment: 'URL' },
 		width:     { type: DataTypes.INTEGER, defaultValue: 0,  comment: '宽' },
 		height:    { type: DataTypes.INTEGER, defaultValue: 0,  comment: '高' },

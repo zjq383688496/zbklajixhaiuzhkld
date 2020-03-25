@@ -1,6 +1,8 @@
 const fs = require('fs')
+const { redis, sequelize } = global
 const { __tmp, __encode, sbin } = require('../config')
 const { exec, spawn } = require('./child_process')
+const mkdir = require('./mkdir')
 
 module.exports = {
 	getMediaInfo,
@@ -31,27 +33,23 @@ function mediaInfoFormat(data) {
 
 	// 比特率处理成number
 	streams.forEach(stream => {
-		stream.bit_rate = +stream.bit_rate
-
-		if (stream.codec_type === 'audio') {
-			newData.audio.push(stream)
-		}
-		if (stream.codec_type !== 'video') return
-
-		newData.video = stream
+		let { bit_rate, coded_width, coded_height, width, height, duration, r_frame_rate } = stream
 		
-		let { bit_rate, coded_width, coded_height, duration, width, height, display_aspect_ratio, r_frame_rate, sample_aspect_ratio } = stream
-
+		if (stream.codec_type === 'audio') newData.audio.push(stream)
+		bit_rate = +bit_rate
 		duration = +duration
 
+		Object.assign(stream, { bit_rate, duration })
+		if (stream.codec_type !== 'video') return
+		newData.video = stream
 		let frame_rate = eval(r_frame_rate)                             // 帧数/s
 
 		// 添加新属性
 		Object.assign(stream, {
-			duration,
 			frame_rate,							                    // 帧速率
 			frames: duration * frame_rate,                          // 帧总数
-			px_bit: coded_width * coded_height * frame_rate / bit_rate
+			px_bit: coded_width * coded_height * frame_rate / bit_rate,
+			size_aspect_ratio: width / height,
 		})
 	})
 
@@ -59,19 +57,36 @@ function mediaInfoFormat(data) {
 }
 
 // 轨道分离
-function trackSeparate({ fotmat, audio, video }, path, hash) {
-	let output = `${__encode}/hash`
-	return new Promise(resolve => {
-		// let 
-		// Promise.all([
-
-		// ])
-		debugger
+function trackSeparate({ audio, video }, path, hash) {
+	return new Promise(async resolve => {
+		let outputDir = `${__encode}/${hash}/original`
+		let $audio = [], tracks = { video: '', audio: $audio }
+		let idx = 0
+		await mkdir(outputDir)
+		while(true) {
+			let _audio = audio[idx]
+			if (!_audio) break
+			let a = await separateAudio(path, idx, outputDir)
+			$audio.push(a)
+			++idx
+		}
+		tracks.video = await separateVideo(path, outputDir)
+		resolve(tracks)
 	})
 }
 
-function separateVideo(path) {
-	return new Promise(resolve => {
+function separateVideo(path, outputDir) {
+	return new Promise(async resolve => {
+		let output = `${outputDir}/v.mp4`
+		await spawn(sbin.ffmpeg, `-y -i ${path} -c:v copy -an ${output}`)
+		resolve(output)
+	})
+}
 
+function separateAudio(path, trackId, outputDir) {
+	return new Promise(async resolve => {
+		let output = `${outputDir}/a_${trackId}.m4a`
+		await spawn(sbin.ffmpeg, `-y -i ${path} -map 0:${trackId + 1} -c:a copy -vn ${output}`)
+		resolve(output)
 	})
 }

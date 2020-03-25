@@ -15,7 +15,7 @@ let mediaEncode = schedule.scheduleJob('*/10 * * * * *', async () => {
         return
     }
     let info = JSON.parse(infoStr)
-
+    console.log('开始编码!')
     encode(info, hash)
 })
 

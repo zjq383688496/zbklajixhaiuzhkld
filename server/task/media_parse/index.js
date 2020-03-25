@@ -15,7 +15,7 @@ let mediaParse = schedule.scheduleJob('*/30 * * * * *', async () => {
         return
     }
     let info = JSON.parse(infoStr)
-
+    console.log('开始解析!')
     parse(info, hash)
 })
 

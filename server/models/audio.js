@@ -9,7 +9,7 @@ module.exports = function(sequelize, DataTypes) {
 		initRange: { type: DataTypes.INTEGER, comment: '初始范围' },
 		bitrate:   { type: DataTypes.FLOAT,   comment: '比特率' },
 		duration:  { type: DataTypes.FLOAT,   comment: '时长(毫秒)' },
-		size:      { type: DataTypes.INTEGER, comment: '大小' },
+		size:      { type: DataTypes.BIGINT(11), comment: '大小' },
 		url:       { type: DataTypes.STRING,  comment: 'URL' },
 		language:  { type: DataTypes.INTEGER, comment: '语言' },
 		// 0. 原始 1. 32 2. 64 3. 128, 4. 160
