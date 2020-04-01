@@ -4,9 +4,12 @@ const redis     = require('./redis/admin')
 global.sequelize = sequelize
 global.redis = redis
 global.task  = {
-	media_parse:  {},
-	media_encode: {},
-	curHashDir: '',
+	media_parse:  {
+		state: false
+	},
+	media_encode: {
+		state: false
+	},
 }
 
 require('./task/media_parse')

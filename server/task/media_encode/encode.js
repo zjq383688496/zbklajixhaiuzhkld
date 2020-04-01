@@ -21,25 +21,26 @@ const qualityMap = {
     160:  4,
 }
 
-async function encode(data, hash) {
-    media_encode.encodeState = true
+async function encode(data, code) {
+    media_encode.state = true
     let { type } = data
     let fn = encodeFn[`encode_${type}`]
-    if (fn) await fn(data, hash)
-    media_encode.encodeState = false
+    if (fn) await fn(data, code)
+    media_encode.state = false
 }
 
 module.exports = encode
 
 let encodeFn = {
-    encode_video: async function(data, hash) {
+    // 编码视频
+    encode_video: async function(data, code) {
         return new Promise(async resolve => {
             let { width, height, fps, dir, parentId, quality, source, name } = data,
                 where = { parentId, quality }
             let result = await Video.findOne({ where })
             if (!result || result.url) {
                 await redis.lpop('encode_queue')
-                await redis.del(hash)
+                await redis.del(code)
             }
             if (result.url) return resolve(result.url)
             let { id } = result
@@ -67,21 +68,23 @@ let encodeFn = {
             }, { where: { id } })
 
             await redis.lpop('encode_queue')
-            await redis.del(hash)
+            await redis.del(code)
             resolve(url)
         })
     },
-    encode_audio: async function(data, hash) {
+    // 编码音频
+    encode_audio: async function(data, code) {
         return new Promise(async resolve => {
             let { bit, dir, parentId, quality, source, trackId, name } = data,
                 where = { parentId, quality, trackId }
             let result = await Audio.findOne({ where })
             if (!result || result.url) {
                 await redis.lpop('encode_queue')
-                await redis.del(hash)
+                await redis.del(code)
             }
             if (result.url) return resolve(result.url)
             let { id } = result
+            // 创建目录
             await mkdir(dir)
             let url  = await toFmp4Audio(source, dir, name, bit),
                 info = await getInfo(url),
@@ -106,7 +109,7 @@ let encodeFn = {
             }, { where: { id } })
 
             await redis.lpop('encode_queue')
-            await redis.del(hash)
+            await redis.del(code)
             resolve(url)
         })
     }

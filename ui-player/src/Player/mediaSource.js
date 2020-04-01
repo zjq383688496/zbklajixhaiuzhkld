@@ -1,7 +1,7 @@
 import { xhr, getMedia } from './utils/xhr'
 import Mp4parse from '@/utils/mp4info'
 
-const baseUrl = 'http://localhost:4090'
+const baseUrl = 'http://localhost:4091/client'
 
 const fragmentLimit = 6
 
@@ -34,8 +34,8 @@ class IMS {
 	_duration    = 0
 	base_url     = ''
 	currentTime  = 0
-	mime_video   = 'video/mp4; codecs="avc1.64001f"'
-	mime_audio   = 'audio/mp4; codecs="mp4a.40.2"'
+	mime_video   = ''
+	mime_audio   = ''
 	info_video   = { updateTime: 0, updateSpaceTime: 20, lock: false, endTime: 0, updateLock: false, }
 	info_audio   = { updateTime: 0, updateSpaceTime: 20, lock: false, endTime: 0, updateLock: false, }
 	mediaHeader  = {}
@@ -45,8 +45,8 @@ class IMS {
 	audioStreams = []
 	videoBuffer  = null
 	audioBuffer  = null
-	track_video  = '480p'
-	track_audio  = '96k'
+	track_video  = ''
+	track_audio  = ''
 
 	canplayLock  = false
 
@@ -71,8 +71,8 @@ class IMS {
 		this._duration = Math.min(video.duration, audio.duration)
 
 		Object.assign(this.mediaHeader, {
-			video: `${baseUrl}/admin${base_url}${video.url}`,
-			audio: `${baseUrl}/admin${base_url}${audio.url}`,
+			video: video.url,
+			audio: audio.url,
 		})
 
 		this.initMS()
@@ -94,8 +94,9 @@ class IMS {
 	// 获取媒体信息
 	async getInfo(id, type) {
 		return new Promise(async res => {
-			let { code, data } = await xhr(`${baseUrl}/admin/videos/${id}`),
-				{ title, baseUrl: base_url, streams = [] } = data,
+			let { code, data, msg } = await xhr(`${baseUrl}/video/${id}`)
+			if (!data) return console.error(msg)
+			let { title, baseUrl: base_url, streams = [] } = data,
 				vIndex = 0, aIndex = 0
 			this.base_url = base_url
 			streams.forEach(stream => {
@@ -116,14 +117,6 @@ class IMS {
 				}
 			})
 			res()
-		})
-	}
-
-	// 获取视频信息
-	getMediaInfo(mediaType, quality) {
-		return new Promise(async res => {
-			var info = await xhr(`${baseUrl}/static/${mediaType}info?q=${quality}`)
-			res(info.data)
 		})
 	}
 	
@@ -230,7 +223,7 @@ class IMS {
 				{ mediaSource, MSEClearTrackBuffer } = this,
 				info = this[`info_${type}`]
 
-			Promise.all(fragments.map(fragment => xhr(fragment, { format: 'arraybuffer' }))).then(bufferArray => {
+			Promise.all(fragments.map(fragment => getMedia(fragment))).then(bufferArray => {
 				async function addNextFragment() {
 					let buf = bufferArray.shift()
 					if (!buf) {

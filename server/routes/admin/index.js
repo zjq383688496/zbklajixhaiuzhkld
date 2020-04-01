@@ -1,5 +1,5 @@
 const router = require('koa-router')()
-const { media } = require('../../proxy')
+const { media } = require('../../proxy/admin')
 
 router.prefix('/admin')
 

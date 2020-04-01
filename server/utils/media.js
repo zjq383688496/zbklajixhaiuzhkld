@@ -72,7 +72,6 @@ function toFmp4Video(source, dir, name, width, height, fps) {
         console.log('开始编码!')
         await spawn(sbin.ffmpeg, ffcfg, {}, false)
         console.log('编码完成!')
-        debugger
         console.log('开始分片!')
         await spawn(sbin.mp4fragment, `--track video --index --fragment-duration 20000 ${tmp} ${output}`, {}, false)
         console.log('分片完成!')

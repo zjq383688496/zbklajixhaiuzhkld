@@ -13,6 +13,12 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "启动程序:client",
+            "program": "${workspaceFolder}/bin/www.client"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "启动程序:task",
             "program": "${workspaceFolder}/app.task.js"
         }

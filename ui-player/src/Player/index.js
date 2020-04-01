@@ -33,7 +33,8 @@ export default class Player extends Component {
 	init = dom => {
 		if (!dom) return
 		this.$video = dom
-		let MS = createMS(dom, 1, {})
+		// let MS = createMS(dom, '18wmreDzBc7Br+sAujjObbGGtXQ9q2ro0CY6WQF94Lg=', {})
+		let MS = createMS(dom, 'shXOW86UHBP4JMew1gyHP70+f7L5IZl33zPTb+dT5Ds=', {})
 		this.setState({ MS }, this.handleEvent)
 	}
 

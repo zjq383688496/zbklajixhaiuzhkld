@@ -13,7 +13,7 @@ function _spawn(cmd, args = [], options = {}, hasLog = true) {
 			else console.log(data)
 		})
 		ls.stderr.on('data', err => {
-			if (!(init % 32)) console.log(`${err}`)
+			// if (!(init % 32)) console.log(`${err}`)
 			++init
 		})
 		ls.on('close', code => {

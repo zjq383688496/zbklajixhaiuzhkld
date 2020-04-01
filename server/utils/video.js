@@ -13,7 +13,7 @@ module.exports = {
 // 获取媒体信息
 function getMediaInfo(path) {
 	return new Promise(async (resolve, reject) => {
-		let stdout = await exec(`${sbin.ffprobe} -v quiet -show_format -show_streams -print_format json ${path}`)
+		var stdout = await exec(`${sbin.ffprobe} -v quiet -show_format -show_streams -print_format json ${path}`)
 		var str = mediaInfoFormat(JSON.parse(stdout))
 		resolve(str)
 	})
@@ -57,9 +57,9 @@ function mediaInfoFormat(data) {
 }
 
 // 轨道分离
-function trackSeparate({ audio, video }, path, hash) {
+function trackSeparate({ audio, video }, path, code) {
 	return new Promise(async resolve => {
-		let outputDir = `${__encode}/${hash}/original`
+		let outputDir = `${__encode}/${code}/original`
 		let $audio = [], tracks = { video: '', audio: $audio }
 		let idx = 0
 		await mkdir(outputDir)

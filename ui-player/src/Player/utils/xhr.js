@@ -32,7 +32,8 @@ export function getMedia(url, body = {}) {
 				debugger
 			}
 		}
-		xhr.open('GET', url, true)
+		xhr.open('POST', url, true)
+		xhr.setRequestHeader('content-type', 'application/json')
 		xhr.send(JSON.stringify(body))
 	})
 }

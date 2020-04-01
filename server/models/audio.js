@@ -25,8 +25,7 @@ module.exports = function(sequelize, DataTypes) {
 		getterMethods: {
 			initRange: function() {
 				let { initRange }  = this.dataValues
-				debugger
-				return { start: 0, end: +initRange }
+				return { start: 0, end: initRange }
 			}
 		}
 	})

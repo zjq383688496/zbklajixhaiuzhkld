@@ -27,8 +27,6 @@ app.use(logger())
 global.sequelize = sequelize
 global.redis = redis
 // 路由
-// console.log(path.resolve(__dirname, './.encode'))
-// debugger
 // app.use(require('koa-static')(path.resolve(__dirname, './.encode'), {
 // 	hidden: true,
 // 	// defer: true

@@ -4,7 +4,6 @@ let { media_parse } = task
 let { __encode } = require('../../config')
 const { getMediaInfo, trackSeparate } = require('../../utils/video')
 const { getInfo } = require('../../utils/media')
-const { salt } = require('../../utils/crypto')
 const { Media, Video, Audio } = sequelize
 
 const extMap  = { 1: 'p', 2: 'k' }
@@ -25,18 +24,17 @@ const qualityMap = {
 let resolutionRatio = [ 240, 360, 480, 720, 1080, 2160 ],
     audioBit = [ 32, 64, 128, 160 ]
 
-async function parse({ parentId, path }, hash) {
-    task.curHashDir = `${__encode}/${hash}`
-    media_parse.parseState = true
+async function parse({ parentId, path }, code) {
+    media_parse.state = true
     let result = await Media.findOne({ where: { id: parentId } })
     let info   = await getMediaInfo(path)
-    let tracks = await trackSeparate(info, path, hash)
+    let tracks = await trackSeparate(info, path, code)
     let queue  = await queueParse(info, tracks)
-    await updataTracks(info, tracks, parentId, queue, hash)
+    await updataTracks(info, tracks, parentId, queue, code)
     await redis.lpop('task_queue')
-    await redis.del(hash)
+    await redis.del(code)
     await fs.unlinkSync(path)
-    media_parse.parseState = false
+    media_parse.state = false
 }
 
 module.exports = parse
@@ -85,20 +83,19 @@ function audioParse(info, path) {
     return quality
 }
 // 更新轨道
-function updataTracks(info, tracks, parentId, queue, hash) {
+function updataTracks(info, tracks, parentId, queue, parentCode) {
     return new Promise(async resolve => {
         let { video, audio } = info,
             { video: _video, audio: _audio } = tracks,
-            { video: $video, audio: $audio } = queue,
-            parentCode = salt(parentId + '')
-        Promise.all(audio.map((a, i) => updataAudio(_audio[i], parentId, parentCode, i, 0, $audio[i], hash))).then(async res => {
-            let videoTask = await updataVideo(_video, parentId, parentCode, 0, $video, hash)
+            { video: $video, audio: $audio } = queue
+        Promise.all(audio.map((a, i) => updataAudio(_audio[i], parentId, parentCode, i, 0, $audio[i]))).then(async res => {
+            let videoTask = await updataVideo(_video, parentId, parentCode, 0, $video)
             resolve()
         })
     })
 }
 // 更新视频
-function updataVideo(path, parentId, parentCode, quality, queue, hash) {
+function updataVideo(path, parentId, parentCode, quality, queue) {
     return new Promise(async resolve => {
         let result = await Video.findOne({ where: { parentId, quality } })
         if (result) return resolve()
@@ -109,10 +106,9 @@ function updataVideo(path, parentId, parentCode, quality, queue, hash) {
         while(true) {
             let q = queue[idx]
             if (!q) break
-            await addVideoQueue(path, parentId, parentCode, hash, q)
+            await addVideoQueue(path, parentId, parentCode, q)
             ++idx
         }
-
         // 写入数据库
         await Video.create({
             parentId,
@@ -129,11 +125,10 @@ function updataVideo(path, parentId, parentCode, quality, queue, hash) {
     })
 }
 // 更新音频
-function updataAudio(path, parentId, parentCode, trackId, quality, queue, hash) {
+function updataAudio(path, parentId, parentCode, trackId, quality, queue) {
     return new Promise(async resolve => {
         let result = await Audio.findOne({ where: { parentId, trackId, quality } })
         if (result) return resolve()
-        let parentCode = salt(parentId + '')
         let info = await getInfo(path),
             { codecs_string, duration, size, media } = info,
             idx = 0
@@ -141,7 +136,7 @@ function updataAudio(path, parentId, parentCode, trackId, quality, queue, hash) 
         while(true) {
             let q = queue[idx]
             if (!q) break
-            await addAudioQueue(path, parentId, parentCode, hash, q, trackId)
+            await addAudioQueue(path, parentId, parentCode, q, trackId)
             ++idx
         }
 
@@ -159,14 +154,14 @@ function updataAudio(path, parentId, parentCode, trackId, quality, queue, hash) 
     })
 }
 // 新增编码队列
-function addVideoQueue(source, parentId, parentCode, hash, { width, height, fps }) {
+function addVideoQueue(source, parentId, parentCode, { width, height, fps }) {
     return new Promise(async resolve => {
         let quality = qualityMap[height]
         let result  = await Video.findOne({ where: { parentId, quality } })
         if (result) return resolve(result)
         let subDir = `${height}p`,
-            key    = `${hash}_${subDir}`,
-            dir    = `${__encode}/${hash}/${subDir}`,
+            key    = `${parentCode}_${subDir}`,
+            dir    = `${__encode}/${parentCode}/${subDir}`,
             name   = `v.mp4`,
             data   = {
                 parentId,
@@ -175,7 +170,7 @@ function addVideoQueue(source, parentId, parentCode, hash, { width, height, fps 
                 name,
                 dir,
                 url: `/${subDir}/${name}`,
-                hash,
+                code: parentCode,
                 quality,
                 width,
                 height,
@@ -196,14 +191,14 @@ function addVideoQueue(source, parentId, parentCode, hash, { width, height, fps 
         resolve(data)
     })
 }
-function addAudioQueue(source, parentId, parentCode, hash, bit, trackId) {
+function addAudioQueue(source, parentId, parentCode, bit, trackId) {
     return new Promise(async resolve => {
         let quality = qualityMap[bit]
         let result  = await Audio.findOne({ where: { parentId, quality, trackId } })
         if (result) return resolve(result)
         let subDir = `${bit}k`,
-            key    = `${hash}_${subDir}`,
-            dir    = `${__encode}/${hash}/${subDir}`,
+            key    = `${parentCode}_${subDir}`,
+            dir    = `${__encode}/${parentCode}/${subDir}`,
             name   = `a_${trackId}.m4a`,
             data   = {
                 parentId,
@@ -211,7 +206,7 @@ function addAudioQueue(source, parentId, parentCode, hash, bit, trackId) {
                 type: 'audio',
                 dir,
                 url: `/${subDir}/${name}`,
-                hash,
+                code: parentCode,
                 name,
                 quality,
                 trackId,

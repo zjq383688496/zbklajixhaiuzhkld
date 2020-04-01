@@ -1,8 +1,11 @@
 const router = require('koa-router')()
-const { hls } = require('../model')
+const { media } = require('../../proxy/client')
 
-router.prefix('/hls')
+router.prefix('/client')
 
-router.get('/:id/:q/:filename', hls.read)
+router
+	// 视频相关
+	.get('/video/:code',  media.detail)
+	.post('/video/:code/:url', media.video)
 
 module.exports = router

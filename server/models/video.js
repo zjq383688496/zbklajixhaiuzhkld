@@ -1,4 +1,5 @@
 // const Tools = require('../common/tools')
+// const { encrypt } = require('../utils/crypto')
 
 module.exports = function(sequelize, DataTypes) {
 	const Video = sequelize.define('play_video', {
@@ -26,9 +27,12 @@ module.exports = function(sequelize, DataTypes) {
 		getterMethods: {
 			initRange: function() {
 				let { initRange }  = this.dataValues
-				debugger
-				return { start: 0, end: +initRange }
-			}
+				return { start: 0, end: initRange }
+			},
+			// url: function() {
+			// 	let { parentCode, url }  = this.dataValues
+			// 	return encrypt(url)
+			// }
 		}
 	})
 

@@ -37,7 +37,9 @@ const config = {
 			// }
 		}
 	},
-	__salt: 'cWRWpvPB2GNhY9Pt6diSDwK6s6SqxMHmizfDG352ohwQCdcDxvNNTPOC4KPfSn1s'
+	__salt: 'cWRWpvPB2GNhY9Pt6diSDwK6s6SqxMHmizfDG352ohwQCdcDxvNNTPOC4KPfSn1s',
+	__key: Buffer.from('zG134Ig5znU01oBA', 'utf8'),
+	__iv: Buffer.from('8DPMw3jz8QFe5NgU', 'utf8')
 }
 
 module.exports = config
